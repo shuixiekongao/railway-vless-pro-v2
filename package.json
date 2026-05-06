@@ -1,6 +1,6 @@
 {
-  "name": "railway-vless-panel",
-  "version": "2.0.0",
+  "name": "railway-cat-tree",
+  "version": "2.5.8",
   "main": "web.js",
-  "dependencies": {"express": "^4.18.2"}
+  "dependencies": {"express": "^3.18.2"}
 }
