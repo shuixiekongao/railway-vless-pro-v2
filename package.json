@@ -1,0 +1,6 @@
+{
+  "name": "railway-vless-panel",
+  "version": "2.0.0",
+  "main": "web.js",
+  "dependencies": {"express": "^4.18.2"}
+}
