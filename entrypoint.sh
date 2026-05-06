@@ -31,7 +31,7 @@ fi
 sed "s#__UUID__#$UUID#g; s#__DOMAIN__#$DOMAIN#g" /app/xray-template.json > /app/config.json
 
 /usr/local/xray/xray -config /app/config.json > /app/xray.log 2>&1 &
-cloudflared tunnel run --token "$ARGO_TOKEN" > /app/argo.log 2>&1 &
+cloudflared tunnel --no-autoupdate run --token "$ARGO_TOKEN" > /app/argo.log 2>&1 &
 node /app/web.js > /app/web.log 2>&1 &
 
 # internal self ping keepalive
