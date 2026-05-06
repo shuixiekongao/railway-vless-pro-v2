@@ -14,7 +14,7 @@ RUN wget -O /usr/local/bin/cloudflared https://github.com/cloudflare/cloudflared
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x /app/start.sh
+RUN chmod +x /app/entrypoint.sh
 RUN npm install
 
-CMD ["/app/start.sh"]
+CMD ["/app/entrypoint.sh"]
