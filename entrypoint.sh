@@ -1,25 +1,12 @@
 #!/bin/bash
 
-# ==============================
-echo " Railway Argo VLESS PRO V2 "
-# ==============================
+echo "=============================="
+echo " Railway Argo VLESS FLAGSHIP "
+echo "=============================="
 
 UUID=${UUID:-$(cat /proc/sys/kernel/random/uuid)}
-
-# 自动获取 DOMAIN
-if [ -n "$DOMAIN" ]; then
-  export DOMAIN="$DOMAIN"
-elif [ -n "$RAILWAY_PUBLIC_DOMAIN" ]; then
-  export DOMAIN="$RAILWAY_PUBLIC_DOMAIN"
-elif [ -n "$RAILWAY_STATIC_URL" ]; then
-  export DOMAIN="$RAILWAY_STATIC_URL"
-elif [ -n "$RENDER_EXTERNAL_HOSTNAME" ]; then
-  export DOMAIN="$RENDER_EXTERNAL_HOSTNAME"
-else
-  export DOMAIN="localhost"
-fi
-
 ARGO_TOKEN=${ARGO_TOKEN}
+ARGO_DOMAIN=${ARGO_DOMAIN}
 PORT=${PORT:-3000}
 
 if [ -z "$ARGO_TOKEN" ]; then
@@ -27,14 +14,27 @@ if [ -z "$ARGO_TOKEN" ]; then
   exit 1
 fi
 
-# 自动替换 UUID 和 DOMAIN
-sed "s#__UUID__#$UUID#g; s#__DOMAIN__#$DOMAIN#g" /app/xray-template.json > /app/config.json
+if [ -z "$ARGO_DOMAIN" ]; then
+  echo "ARGO_DOMAIN missing!"
+  exit 1
+fi
 
+export UUID
+export DOMAIN=$ARGO_DOMAIN
+
+# 自动替换 UUID
+sed "s#UUID#$UUID#g" /app/xray-template.json > /app/config.json
+
+# 启动 Xray
 /usr/local/xray/xray -config /app/config.json > /app/xray.log 2>&1 &
+
+# 启动 Cloudflare Tunnel
 cloudflared tunnel --no-autoupdate run --token "$ARGO_TOKEN" > /app/argo.log 2>&1 &
+
+# 启动 Web 面板（仅展示）
 node /app/web.js > /app/web.log 2>&1 &
 
-# internal self ping keepalive
+# keepalive 防休眠（打web面板）
 (
 while true
 do
@@ -48,11 +48,11 @@ sleep 10
 echo ""
 echo "========= NODE INFO ========="
 echo "UUID   : $UUID"
-echo "DOMAIN : $DOMAIN"
+echo "DOMAIN : $ARGO_DOMAIN"
 echo ""
-echo "VLESS  : vless://${UUID}@${DOMAIN}:443?encryption=none&security=tls&sni=${DOMAIN}&type=ws&host=${DOMAIN}&path=%2Fvless#Railway-Argo-ProV2"
-echo "SUB    : https://${DOMAIN}/sub"
-echo "INFO   : https://${DOMAIN}/info"
+echo "VLESS  : vless://${UUID}@${ARGO_DOMAIN}:443?encryption=none&security=tls&sni=${ARGO_DOMAIN}&type=xhttp&host=${ARGO_DOMAIN}&path=%2Fvless#Railway-Argo-Flagship"
+echo "SUB    : https://${ARGO_DOMAIN}/sub"
+echo "INFO   : https://${ARGO_DOMAIN}/info"
 echo "KEEPALIVE ENABLED"
 echo "============================="
 
